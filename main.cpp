@@ -6,6 +6,7 @@ using namespace std;
 int main(int argc, char** argv) {
     if(argc!=3 && argc !=2) {
         cout << "Error..." << endl;
+        exit(1);
     }  
     string inputFileName,outputFileName;
     if(argc==3) {
