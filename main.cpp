@@ -1,4 +1,5 @@
 #include<bits/stdc++.h>
+#include "vm.h"
 
 using namespace std;
 
@@ -15,10 +16,9 @@ int main(int argc, char** argv) {
         inputFileName = argv[1];
         outputFileName = "a.m";
     }
-    cout << inputFileName << endl;
-    cout << outputFileName << endl;
-    
-    ifstream infile;
-    infile.open(inputFileName);
-
+    //cout << inputFileName << endl;
+    //cout << outputFileName << endl;
+    VM V(inputFileName, outputFileName);
+    V.convertToAssembly();
+    return 0;
 }
