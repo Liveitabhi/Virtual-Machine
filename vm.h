@@ -42,7 +42,6 @@ void VM::threeAddToVMCode()
     string is, vms;
     while (getline(fin, is))
     {
-        cout<<is<<endl;
         vms = getVMCode(is);
         fout << vms;
     }
@@ -65,12 +64,10 @@ string VM::getVMCode(string s)
     tokens.clear();
     while (getline(tokenizer, token, ' '))
     {
-        cout << token << endl;
         Token t(token);
         tokens.push_back(t);
     }
-    cout<<endl;
-    c
+
     // 2. Match Format of 3 address code
     // Assignment - 0
     // Arithmetic - 1
