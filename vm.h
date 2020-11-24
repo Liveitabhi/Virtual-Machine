@@ -108,39 +108,68 @@ string VM::getVMCode(string s)
         
         // Label
         if(tokens.at(1).name.compare(":") == 0)
-            vmcode += tokens.at(0).name + " :";
-        
+            vmcode += "label " + tokens.at(0).name;
+
         // Unconditional jump
         else if(tokens.at(0).name.compare("goto") == 0)
             vmcode += "goto " + tokens.at(1).name;
-    
+
         // Conditional jump
         else if(tokens.at(2).name.compare("goto") == 0)
             vmcode += "if-goto" + tokens.at(3).name;
+            
+        vmcode += "\n";
     }
     else if(typeOfInstruction == 3)
     {
-        // Function/method definition
+        // Function/method definition and return
 
-        // Begin
-        if(tokens.at(0).name.compare("BeginFunc"))
-            vmcode
-
-        // End
-        else if(tokens.at(0).name.compare("EndFunc"))
-            vmcode
+        if(tokens.at(0).name.compare("function"))
+            vmcode += "function " + tokens.at(1).name + " 0\n";
 
         // Return
-        else if(tokens.at(0).name.compare("Return"))
+        else if(tokens.at(0).name.compare("return"))
         {
-            // Void func
+            // Void function
             if(tokens.size()==1)
-                vmcode
+            {
+                vmcode += "push NULL\n";
+                vmcode += "return\n";
+            }
 
-            // Non-void func
+            // Non-void function
             else if(tokens.size()==2)
-                vmcode
+            {
+                vmcode += "push " + tokens.at(1).name + "\n";
+                vmcode += "return\n";
+            }
         }
+        
+    }
+    else if(typeOfInstruction == 4)
+    {
+        // Function/methods call
+
+        //Void call
+        if(tokens.at(0).name.compare("call") == 0)
+            vmcode += "call " + tokens.at(1).name + " " + tokens.at(2).name + "\n";
+
+        //Non-void call
+        else if(tokens.at(2).name.compare("call") == 0)
+        {
+            vmcode += "call " + tokens.at(1).name + " " + tokens.at(2).name + "\n";
+            vmcode += "pop " + tokens.at(0).name + "\n";
+        }
+    }
+    else if(typeOfInstruction == 5)
+    {
+        // Function/methods parameters
+        if(tokens.at(0).name.compare("pushParam") == 0)
+            vmcode += "push " + tokens.at(0).name + "\n";
+    }
+    else if(vmcode.compare("") == 0)
+    {
+        cout << "ERROR " << endl;
     }
     return vmcode;
 }
@@ -156,8 +185,7 @@ int VM::getTypeOfInstruction(vector<Token> &v)
         return 1;
 
     // Lables and Branches - 2
-    // Function/method definition - 3
+    // Function/method definition and return - 3
     // Function/method calls - 4
     // Functional Parameters - 5
-    // Variable Declaration - 6
 }
