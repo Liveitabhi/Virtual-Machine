@@ -1,12 +1,55 @@
-_t0 = 3
-b = _t0
-_t1 = 12
-a = _t1
-_t2 = 2
-_t3 = b + _t2
-_t4 = 3
-_t5 = a * _t4
-_t6 = 6
-_t7 = _t5 / _t6
-_t8 = _t3 - _t7
-a = _t8
+a = 3
+b = 5
+c = 10
+if (a > 5)
+{
+    d = sum(a,b)
+    e = c - d   
+}
+else
+{
+    d = sub(b,a)
+    e = c + d
+}
+
+int sum(a,b){
+    return a+b
+}
+
+int sub(a,b) {
+    return a-b
+}
+
+a = 3
+b = 5
+c = 10
+_t1 = a < 5
+_t2 = a == 5
+_t3 = _t1 || _t2
+If _t3 Goto L1
+
+
+
+
+a = 3
+b = 5
+c = 10
+if (!(a == 5))
+{
+    d = sum(a,b)
+    e = c - d   
+}
+else
+{
+    d = sub(b,a)
+    e = c + d
+}
+
+
+int sum(a,b){
+    return a+b
+}
+
+int sub(a,b) {
+    return a-b
+}

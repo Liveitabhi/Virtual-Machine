@@ -7,12 +7,12 @@ int main(int argc, char** argv) {
     if(argc!=3 && argc !=2) {
         cout << "Error..." << endl;
         exit(1);
-    }  
+    }
     string inputFileName,outputFileName;
     if(argc==3) {
         inputFileName = argv[1];
         outputFileName = argv[2];
-    } 
+    }
     else {
         inputFileName = argv[1];
         outputFileName = "a.m";
@@ -20,6 +20,6 @@ int main(int argc, char** argv) {
     //cout << inputFileName << endl;
     //cout << outputFileName << endl;
     VM V(inputFileName, outputFileName);
-    V.convertToAssembly();
+    V.convertToAssembly(); // VM Translator Functionality
     return 0;
 }

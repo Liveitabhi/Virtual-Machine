@@ -2,31 +2,3 @@ push 3
 pop _t0
 push _t0
 pop b
-push 12
-pop _t1
-push _t1
-pop a
-push 2
-pop _t2
-push b
-push _t2
-add
-pop _t3
-push 3
-pop _t4
-push a
-push _t4
-mult
-pop _t5
-push 6
-pop _t6
-push _t5
-push _t6
-div
-pop _t7
-push _t3
-push _t7
-sub
-pop _t8
-push _t8
-pop a

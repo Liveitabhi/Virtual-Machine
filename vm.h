@@ -70,11 +70,12 @@ string VM::getVMCode(string s)
 
     // 2. Match Format of 3 address code
     // Assignment - 0
-    // Arithmetic - 1
+    // Arithmetic, Logical - 1
+    // Labels, Branching - 2
     int typeOfInstruction = getTypeOfInstruction(tokens);
 
     // 3. Convert to appropriate VM Code
-    string vmcode;
+    string vmcode = "";
     if (typeOfInstruction == 0)
     {
         // Assignment Operation
@@ -83,35 +84,80 @@ string VM::getVMCode(string s)
     }
     else if (typeOfInstruction == 1)
     {
-        // Arithmetic Operation
+        // Arithmetic and Logical Operation
         vmcode = "push " + tokens.at(2).name + "\n";
         vmcode += "push " + tokens.at(4).name + "\n";
         string opType = tokens.at(3).name;
         if (opType.compare("+") == 0)
-        {
             vmcode += "add\n";
-        }
         else if (opType.compare("-") == 0)
-        {
             vmcode += "sub\n";
-        }
-        else if (opType.compare("*") == 0)
-        {
-            vmcode += "mult\n";
-        }
-        else if (opType.compare("/") == 0)
-        {
-            vmcode += "div\n";
-        }
+        else if (opType.compare("==") == 0)
+            vmcode += "eq\n";
+        else if (opType.compare("<") == 0)
+            vmcode += "lt\n";
+        else if (opType.compare("&&") == 0)
+            vmcode += "and\n";
+        else if (opType.compare("||") == 0)
+            vmcode += "or\n";
         vmcode += "pop " + tokens.at(0).name + "\n";
+    }
+    else if(typeOfInstruction == 2)
+    {
+        // Labels and Branches
+        
+        // Label
+        if(tokens.at(1).name.compare(":") == 0)
+            vmcode += tokens.at(0).name + " :";
+        
+        // Unconditional jump
+        else if(tokens.at(0).name.compare("goto") == 0)
+            vmcode += "goto " + tokens.at(1).name;
+    
+        // Conditional jump
+        else if(tokens.at(2).name.compare("goto") == 0)
+            vmcode += "if-goto" + tokens.at(3).name;
+    }
+    else if(typeOfInstruction == 3)
+    {
+        // Function/method definition
+
+        // Begin
+        if(tokens.at(0).name.compare("BeginFunc"))
+            vmcode
+
+        // End
+        else if(tokens.at(0).name.compare("EndFunc"))
+            vmcode
+
+        // Return
+        else if(tokens.at(0).name.compare("Return"))
+        {
+            // Void func
+            if(tokens.size()==1)
+                vmcode
+
+            // Non-void func
+            else if(tokens.size()==2)
+                vmcode
+        }
     }
     return vmcode;
 }
 
 int VM::getTypeOfInstruction(vector<Token> &v)
 {
-    if (v.size() == 3)
+    //Assignment - 0
+    if (v.size() == 3 && v.at(1)=='=')
         return 0;
-    else
+
+    //Arithmetic and Logical - 1
+    else if (v.size() == 5)
         return 1;
+
+    // Lables and Branches - 2
+    // Function/method definition - 3
+    // Function/method calls - 4
+    // Functional Parameters - 5
+    // Variable Declaration - 6
 }
