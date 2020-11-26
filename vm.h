@@ -7,14 +7,19 @@ using namespace std;
 class VM
 {
 private:
-    stack<string> vmStack;
+    // stack<string> vmStack;
     string ifname, ofname;
     vector<Token> tokens;
     string token;
+    stack<vector<string>> localVars;
+    stack<vector<string>> args;
     void threeAddToVMCode();
     void vmCodeToAssembly();
-    int getTypeOfInstruction(vector<Token>&);
+    int get3acTypeOfInstruction(vector<Token>&);
+    int getVMTypeOfInstruction(vector<Token>&);
     string getVMCode(string);
+    string getAssemblyCode(string);
+    string getSegmentPos(Token&);
 
 public:
     VM(string, string);
@@ -30,7 +35,7 @@ VM::VM(string inputFileName, string outputFileName)
 void VM::convertToAssembly()
 {
     threeAddToVMCode();
-    //vmCodeToAssembly();
+    vmCodeToAssembly();
 }
 
 void VM::threeAddToVMCode()
@@ -51,12 +56,23 @@ void VM::threeAddToVMCode()
 
 void VM::vmCodeToAssembly()
 {
-    //Rehne de
+    ifstream fin;
+    ofstream fout;
+    fin.open(outputTemVM);
+    fout.open(ofname);
+    string is, arm;
+    while (getline(fin, is))
+    {
+        arm = getAssemblyCode(is);
+        fout << arm;
+    }
+    fin.close();
+    fout.close();
 }
 
 string VM::getVMCode(string s)
 {
-
+    string segmentPos;
     // Arithmetic Operations And Assignment Statements
 
     // 1. Tokenize
@@ -72,21 +88,31 @@ string VM::getVMCode(string s)
     // Assignment - 0
     // Arithmetic, Logical - 1
     // Labels, Branching - 2
-    int typeOfInstruction = getTypeOfInstruction(tokens);
-
+    // Function/method definition and return - 3
+    // Function/methods call - 4
+    // Function/methods parameters - 5
+    // New Line - 6
+    
+    int typeOfInstruction = get3acTypeOfInstruction(tokens);
+    cout<<s<<" "<<typeOfInstruction<<endl;
     // 3. Convert to appropriate VM Code
     string vmcode = "";
     if (typeOfInstruction == 0)
     {
         // Assignment Operation
-        vmcode = "push " + tokens.at(2).name + "\n";
-        vmcode += "pop " + tokens.at(0).name + "\n";
+        segmentPos = getSegmentPos(tokens.at(2));
+        vmcode = "push " + segmentPos + "\n";
+        segmentPos = getSegmentPos(tokens.at(0));
+        vmcode += "pop " + segmentPos + "\n";
     }
     else if (typeOfInstruction == 1)
     {
         // Arithmetic and Logical Operation
-        vmcode = "push " + tokens.at(2).name + "\n";
-        vmcode += "push " + tokens.at(4).name + "\n";
+        segmentPos = getSegmentPos(tokens.at(2));
+        vmcode = "push " + segmentPos + "\n";
+        segmentPos = getSegmentPos(tokens.at(4));
+        vmcode += "push " + segmentPos + "\n";
+
         string opType = tokens.at(3).name;
         if (opType.compare("+") == 0)
             vmcode += "add\n";
@@ -100,7 +126,9 @@ string VM::getVMCode(string s)
             vmcode += "and\n";
         else if (opType.compare("||") == 0)
             vmcode += "or\n";
-        vmcode += "pop " + tokens.at(0).name + "\n";
+
+        segmentPos = getSegmentPos(tokens.at(0));
+        vmcode += "pop " + segmentPos + "\n";
     }
     else if(typeOfInstruction == 2)
     {
@@ -116,20 +144,33 @@ string VM::getVMCode(string s)
 
         // Conditional jump
         else if(tokens.at(2).name.compare("goto") == 0)
-            vmcode += "if-goto" + tokens.at(3).name;
+        {
+            segmentPos = getSegmentPos(tokens.at(1));
+            vmcode += "push " + segmentPos + "\n";
+            vmcode += "if-goto " + tokens.at(3).name;
+        }
             
         vmcode += "\n";
     }
     else if(typeOfInstruction == 3)
     {
         // Function/method definition and return
+        if(tokens.at(0).name.compare("function")==0)
+        {
+            vector<string> v;
+            localVars.push(v);
+            for(int i=3; i<tokens.size(); i++)
+                v.push_back(tokens.at(i).name);
+            args.push(v);
 
-        if(tokens.at(0).name.compare("function"))
-            vmcode += "function " + tokens.at(1).name + " 0\n";
+            vmcode += "function " + tokens.at(1).name + " " + tokens.at(2).name + "\n";
+
+        }
 
         // Return
-        else if(tokens.at(0).name.compare("return"))
+        else if(tokens.at(0).name.compare("return")==0)
         {
+
             // Void function
             if(tokens.size()==1)
             {
@@ -140,9 +181,13 @@ string VM::getVMCode(string s)
             // Non-void function
             else if(tokens.size()==2)
             {
-                vmcode += "push " + tokens.at(1).name + "\n";
+                segmentPos = getSegmentPos(tokens.at(1));
+                vmcode += "push " + segmentPos + "\n";
                 vmcode += "return\n";
             }
+
+            localVars.pop();
+            args.pop();
         }
         
     }
@@ -157,35 +202,110 @@ string VM::getVMCode(string s)
         //Non-void call
         else if(tokens.at(2).name.compare("call") == 0)
         {
-            vmcode += "call " + tokens.at(1).name + " " + tokens.at(2).name + "\n";
-            vmcode += "pop " + tokens.at(0).name + "\n";
+            vmcode += "call " + tokens.at(3).name + " " + tokens.at(4).name + "\n";
+            segmentPos = getSegmentPos(tokens.at(0));
+            vmcode += "pop " + segmentPos + "\n";
         }
     }
     else if(typeOfInstruction == 5)
     {
         // Function/methods parameters
         if(tokens.at(0).name.compare("pushParam") == 0)
-            vmcode += "push " + tokens.at(0).name + "\n";
+        {
+            segmentPos = getSegmentPos(tokens.at(1));
+            vmcode += "push " + segmentPos + "\n";
+        }
     }
-    else if(vmcode.compare("") == 0)
+    else if(typeOfInstruction == 6)
     {
-        cout << "ERROR " << endl;
+        // cout << "ERROR " << endl;
+        vmcode += "\n";
     }
     return vmcode;
 }
 
-int VM::getTypeOfInstruction(vector<Token> &v)
+int VM::get3acTypeOfInstruction(vector<Token> &v)
 {
+    //New line
+    if(v.empty())
+        return 6;
+
     //Assignment - 0
-    if (v.size() == 3 && v.at(1)=='=')
+    if (v.size() == 3 && v.at(1).name.compare("=")==0)
         return 0;
 
     //Arithmetic and Logical - 1
-    else if (v.size() == 5)
+    else if (v.size() == 5 && v.at(1).name.compare("=")==0 && v.at(2).name.compare("call")!=0)
         return 1;
 
-    // Lables and Branches - 2
     // Function/method definition and return - 3
+    else if(v.at(0).name.compare("function") == 0 || v.at(0).name.compare("return") == 0)
+        return 3;
+
+    // Lables and Branches - 2
+    else if(v.at(1).name.compare(":") == 0 || tokens.at(0).name.compare("goto") == 0 || tokens.at(0).name.compare("If") == 0)
+        return 2;
+
     // Function/method calls - 4
+    else if(v.at(0).name.compare("call") == 0 || v.at(1).name.compare("=") == 0)
+        return 4;
+
     // Functional Parameters - 5
+    else
+        return 5;
+}
+
+string VM::getSegmentPos(Token &t)
+{
+    string s = "";
+    
+    if(t.name.at(0)=='_')
+    {
+        s += "temp " + t.name.substr(2);
+        return s;
+    }
+
+    if(t.name.at(0)=='\'' || t.name.at(0)=='\"' || isdigit(t.name.at(0)))
+    {
+        s += "constant " + t.name;
+        return s;
+    }
+
+    vector <string> v = args.top();
+    auto it = find(v.begin(), v.end(), t.name);
+    if(it!=v.end())
+    {
+        s += "argument " + to_string(it-v.begin());
+        return s;
+    }
+
+    v = localVars.top();
+    it = find(v.begin(), v.end(), t.name);
+    if(it!=v.end())
+    {
+        s += "local " + to_string(it-v.begin());
+        return s;
+    }
+
+    s += "local " + to_string(localVars.top().size());
+    localVars.top().push_back(t.name);
+    return s;
+}
+
+string VM:: getAssemblyCode(string s)
+{
+    // 1. Tokenize
+    stringstream tokenizer(s);
+    tokens.clear();
+    while (getline(tokenizer, token, ' '))
+    {
+        Token t(token);
+        tokens.push_back(t);
+    }
+    return "";
+}
+
+int VM::getVMTypeOfInstruction(vector<Token> &v)
+{
+    return 0;
 }

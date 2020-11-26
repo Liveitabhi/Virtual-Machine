@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
     }
     else {
         inputFileName = argv[1];
-        outputFileName = "a.m";
+        outputFileName = "arm.s";
     }
     //cout << inputFileName << endl;
     //cout << outputFileName << endl;

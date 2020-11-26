@@ -1,55 +1,25 @@
-a = 3
-b = 5
-c = 10
-if (a > 5)
-{
-    d = sum(a,b)
-    e = c - d   
-}
-else
-{
-    d = sub(b,a)
-    e = c + d
-}
-
-int sum(a,b){
-    return a+b
-}
-
-int sub(a,b) {
-    return a-b
-}
-
-a = 3
-b = 5
-c = 10
-_t1 = a < 5
-_t2 = a == 5
-_t3 = _t1 || _t2
-If _t3 Goto L1
+function func 0 a b
+_t2 = a + 5
+return _t2
 
 
+function func1 0 c d
+return
 
-
-a = 3
-b = 5
-c = 10
-if (!(a == 5))
-{
-    d = sum(a,b)
-    e = c - d   
-}
-else
-{
-    d = sub(b,a)
-    e = c + d
-}
-
-
-int sum(a,b){
-    return a+b
-}
-
-int sub(a,b) {
-    return a-b
-}
+_L4 :
+function main 3
+int a
+int b
+int c
+_t1 = a == b
+If _t1 goto _L2
+pushParam a
+_t1 = b + 3
+pushParam _t1
+_t1 = call func 2
+goto _L3
+_L2 :
+_t1 = a + b
+_t2 = b + c
+_L3 :
+call func1 0
