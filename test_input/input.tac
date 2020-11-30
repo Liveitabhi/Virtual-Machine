@@ -1,10 +1,9 @@
-function main 3
+function main 1
 int a
-int b
-int c
-_t1 = call func 0
+pushParam 3
+_t7 = call fact 1
+a = _t7
+print a
 end :
-
-function func 0
-_t0 = 5 + 2
-return _t0
+function fact 0 int n
+return _t6

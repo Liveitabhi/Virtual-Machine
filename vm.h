@@ -21,6 +21,8 @@ private:
     string getAssemblyCode(string);
     string getSegmentPos(Token&);
     string memInit();
+    string saveRegisters();
+    string loadRegisters();
 
 public:
     VM(string, string);
@@ -221,8 +223,6 @@ string VM::getVMCode(string s)
         // read
         else if(tokens.at(0).name.compare("read") == 0)
             vmcode += "read " + segmentPos + "\n";
-
-        vmcode += "\n";
     }
     else if(typeOfInstruction == 8)
     {
@@ -344,10 +344,16 @@ void VM::vmCodeToAssembly()
 string VM::memInit()
 {
     string armcode = "";
+
+    // SP,LCL,ARG init
     armcode += "li $r28,3\n";
     armcode += "sw $r28,$zero(0)\n";
     armcode += "sw $r28,$one(0)\n";
-    armcode += "sw $r28,$one(1)\n\n";
+    armcode += "sw $r28,$one(1)\n";
+    
+    // Reg Stack pointer(RSP) init
+    armcode += "li $r28,16389\n";
+    armcode += "sw $r28,$zero(16388)\n";
     return armcode;
 }
 
@@ -493,7 +499,7 @@ string VM::getAssemblyCode(string s)
                 armcode += "\tadd $r28,$r28,$one\n";
             }
             armcode += "\tsw $r28,$zero(0)\n";
-        }    
+        }
     }
     else if(typeOfInstruction == 3)
     {
@@ -521,9 +527,12 @@ string VM::getAssemblyCode(string s)
 
         // Update SP
         armcode += "\tsw $r28,$zero(0)\n";
-        
+
         // LCL = SP // change LCL
         armcode += "\tsw $r28,$one(0)\n";
+
+        // save r0-r25 values
+        armcode += saveRegisters();
 
         // goto fun // call function
         armcode += "\tjal " + tokens.at(1).name + "\n\n";
@@ -565,6 +574,9 @@ string VM::getAssemblyCode(string s)
         armcode += "\taddi $r28,$r28,-1\n";
         armcode += "\tlw $r27,$r28(0)\n";
         armcode += "\tsw $r27,$one(0)\n";
+
+        // Load old register values
+        armcode += loadRegisters();
 
         // goto RET // back to return-addr
         armcode += "\tjr $r26\n";
@@ -772,4 +784,30 @@ int VM::getVMTypeOfInstruction(vector<Token> &v)
     // Syntax Error
     else
         return 12;
+}
+
+string VM::saveRegisters()
+{
+    string armcode = "";
+    armcode += "\tlw $r28,$zero(16388)\n";
+    for(int i=0; i<=25; i++)
+    {
+        armcode += "\tsw $r" + to_string(i) + ",$r28(0)\n";
+        armcode += "\tadd $r28,$r28,$one\n";
+    }
+    armcode += "\tsw $r28,$zero(16388)\n";
+    return armcode;
+}
+
+string VM::loadRegisters()
+{
+    string armcode = "";
+    armcode += "\tlw $r28,$zero(16388)\n";
+    for(int i=25; i>=0; i--)
+    {
+        armcode += "\taddi $r28,$r28,-1\n";
+        armcode += "\tlw $r" + to_string(i) + ",$r28(0)\n";
+    }
+    armcode += "\tsw $r28,$zero(16388)\n";
+    return armcode;
 }
