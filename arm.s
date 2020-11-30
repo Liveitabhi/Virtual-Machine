@@ -19,34 +19,48 @@ main:
 	add $r27,$r27,$one
 	sw $r27,$zero(0)
 	lw $r27,$one(0)
-	lw $r28,$r27(2)
+	lw $r28,$r27(1)
 	lw $r27,$zero(0)
 	sw $r28,$r27(0)
 	add $r27,$r27,$one
 	sw $r27,$zero(0)
 	lw $r28,$zero(0)
+	sw $r29,$r28(0)
+	add $r28,$r28,$one
+	lw $r27,$one(0)
+	sw $r27,$r28(0)
+	add $r28,$r28,$one
+	lw $r27,$one(1)
+	sw $r27,$r28(0)
+	add $r28,$r28,$one
+	addi $r27,$r28,-5
+	sw $r27,$one(1)
+	sw $r28,$one(0)
+	jal add
+
+	lw $r28,$zero(0)
 	addi $r28,$r28,-1
-	lw $r27,$r28(0)
-	addi $r28,$r28,-1
-	lw $r26,$r28(0)
-	seq $r26,$r26,$r27
-	sw $r26,$r28(0)
+	sw $r28,$zero(0)
+	lw $r1,$r28(0)
+	lw $r28,$zero(0)
+	sw $r1,$r28(0)
 	add $r28,$r28,$one
 	sw $r28,$zero(0)
 	lw $r28,$zero(0)
 	addi $r28,$r28,-1
 	sw $r28,$zero(0)
-	lw $r0,$r28(0)
-end:
-	j end
-
-func:
-	li $r28,5
+	lw $r27,$r28(0)
+	lw $r28,$one(0)
+	sw $r27,$r28(2)
+add:
+	lw $r27,$one(1)
+	lw $r28,$r27(0)
 	lw $r27,$zero(0)
 	sw $r28,$r27(0)
 	add $r27,$r27,$one
 	sw $r27,$zero(0)
-	li $r28,2
+	lw $r27,$one(1)
+	lw $r28,$r27(1)
 	lw $r27,$zero(0)
 	sw $r28,$r27(0)
 	add $r27,$r27,$one
@@ -65,6 +79,25 @@ func:
 	sw $r28,$zero(0)
 	lw $r0,$r28(0)
 	lw $r28,$zero(0)
-	addi $r28,$r28,-1
+	sw $r0,$r28(0)
+	add $r28,$r28,$one
 	sw $r28,$zero(0)
-	lw $r0,$r28(0)
+	lw $r28,$one(0)
+	add $r26,$r29,$zero
+	addi $r29,$r28,-3
+	lw $r29,$r29(0)
+	lw $r27,$zero(0)
+	addi $r27,$r27,-1
+	lw $r27,$r27(0)
+	lw $r28,$one(1)
+	sw $r27,$r28(0)
+	add $r28,$r28,$one
+	sw $r28,$zero(0)
+	lw $r28,$one(0)
+	addi $r28,$r28,-1
+	lw $r27,$r28(0)
+	sw $r27,$one(1)
+	addi $r28,$r28,-1
+	lw $r27,$r28(0)
+	sw $r27,$one(0)
+	jr $r26

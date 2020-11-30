@@ -337,8 +337,6 @@ void VM::vmCodeToAssembly()
         fout << arm;
     }
 
-    fout << arm;
-
     fin.close();
     fout.close();
 }
