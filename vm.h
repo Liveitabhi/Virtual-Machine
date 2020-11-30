@@ -337,8 +337,6 @@ void VM::vmCodeToAssembly()
         fout << arm;
     }
 
-    arm = "end:\n";
-    arm += "\tj end\n";
     fout << arm;
 
     fin.close();
@@ -636,7 +634,13 @@ string VM::getAssemblyCode(string s)
     else if(typeOfInstruction == 8)
     {
         // Label
-        armcode += tokens.at(1).name + ":\n";
+        if(tokens.at(1).name.compare("end")==0)
+        {
+            armcode = "end:\n";
+            armcode += "\tj end\n";
+        }
+        else
+            armcode += tokens.at(1).name + ":\n";
     }
     else if(typeOfInstruction == 9)
     {

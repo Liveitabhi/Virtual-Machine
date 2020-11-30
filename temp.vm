@@ -3,17 +3,10 @@ push local 0
 push local 2
 eq
 pop temp 0
+label end
 
-call main1 0
+function func 0
+push constant 5
+push constant 2
+add
 pop temp 0
-
-print local 4
-
-
-read local 3
-
-read temp 5
-
-read argument 1
-
-label main1

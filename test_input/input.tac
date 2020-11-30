@@ -5,12 +5,7 @@ int c
 int tt
 int t
 _t0 = a == c
+end :
 
-_t0 = call main1 0
-
-print t
-
-read tt
-read _t5
-read d
-main1 :
+function func 0
+_t0 = 5 + 2
