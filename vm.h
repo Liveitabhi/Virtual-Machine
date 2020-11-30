@@ -547,7 +547,7 @@ string VM::getAssemblyCode(string s)
 
         // *ARG = pop() // return value
         armcode += "\tlw $r27,$zero(0)\n";
-        armcode += "\taddi $r27,$27,-1\n";
+        armcode += "\taddi $r27,$r27,-1\n";
         armcode += "\tlw $r27,$r27(0)\n";
         armcode += "\tlw $r28,$one(1)\n";
         armcode += "\tsw $r27,$r28(0)\n";
