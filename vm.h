@@ -568,7 +568,7 @@ string VM::getAssemblyCode(string s)
         armcode += "\tsw $r27,$one(0)\n";
 
         // goto RET // back to return-addr
-        armcode += "\tjump $r26\n";
+        armcode += "\tjr $r26\n";
     }
     else if(typeOfInstruction == 5)
     {
@@ -630,7 +630,7 @@ string VM::getAssemblyCode(string s)
     else if(typeOfInstruction == 7)
     {
         // goto - 7
-        armcode += "\tjump " + tokens.at(1).name + "\n";
+        armcode += "\tj " + tokens.at(1).name + "\n";
 
     }
     else if(typeOfInstruction == 8)
