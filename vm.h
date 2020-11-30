@@ -7,12 +7,12 @@ using namespace std;
 class VM
 {
 private:
-    // stack<string> vmStack;
     string ifname, ofname;
     vector<Token> tokens;
     string token;
     stack<vector<string>> localVars;
     stack<vector<string>> args;
+    int inputLabel=0;
     void threeAddToVMCode();
     void vmCodeToAssembly();
     int get3acTypeOfInstruction(vector<Token>&);
@@ -55,31 +55,6 @@ void VM::threeAddToVMCode()
     fout.close();
 }
 
-void VM::vmCodeToAssembly()
-{
-    ifstream fin;
-    ofstream fout;
-    fin.open(outputTemVM);
-    fout.open(ofname);
-    string is, arm;
-
-    arm = memInit();
-    fout << arm;
-
-    while (getline(fin, is))
-    {
-        arm = getAssemblyCode(is);
-        fout << arm;
-    }
-
-    arm = "end:\n";
-    arm += "\tj end\n";
-    fout << arm;
-
-    fin.close();
-    fout.close();
-}
-
 string VM::getVMCode(string s)
 {
     string segmentPos;
@@ -102,8 +77,9 @@ string VM::getVMCode(string s)
     // Function/methods call - 4
     // Function/methods parameters - 5
     // Variable declaration - 6
-    // New Line - 7
-    // Syntax Error - 8
+    // Input-Output - 7
+    // New Line - 8
+    // Syntax Error - 9
 
     int typeOfInstruction = get3acTypeOfInstruction(tokens);
 
@@ -235,6 +211,21 @@ string VM::getVMCode(string s)
     }
     else if(typeOfInstruction == 7)
     {
+        // Input-Output
+        segmentPos = getSegmentPos(tokens.at(1));
+        
+        // print
+        if(tokens.at(0).name.compare("print") == 0)
+            vmcode += "print " + segmentPos + "\n";
+        
+        // read
+        else if(tokens.at(0).name.compare("read") == 0)
+            vmcode += "read " + segmentPos + "\n";
+
+        vmcode += "\n";
+    }
+    else if(typeOfInstruction == 8)
+    {
         // New line
         vmcode += "\n";
     }
@@ -251,7 +242,7 @@ int VM::get3acTypeOfInstruction(vector<Token> &v)
 {
     //New line
     if(v.empty())
-        return 7;
+        return 8;
 
     //Assignment - 0
     if (v.size() == 3 && v.at(1).name.compare("=")==0)
@@ -266,11 +257,11 @@ int VM::get3acTypeOfInstruction(vector<Token> &v)
         return 3;
 
     // Lables and Branches - 2
-    else if(v.at(1).name.compare(":") == 0 || tokens.at(0).name.compare("goto") == 0 || tokens.at(0).name.compare("If") == 0)
+    else if(v.size()>1 && (v.at(1).name.compare(":") == 0 || tokens.at(0).name.compare("goto") == 0 || tokens.at(0).name.compare("If") == 0))
         return 2;
 
     // Function/method calls - 4
-    else if(v.at(0).name.compare("call") == 0 || v.at(1).name.compare("=") == 0)
+    else if(v.size()>1 && (v.at(0).name.compare("call") == 0 || v.at(1).name.compare("=") == 0))
         return 4;
 
     // Functional Parameters - 5
@@ -281,9 +272,13 @@ int VM::get3acTypeOfInstruction(vector<Token> &v)
     else if(v.at(0).name.compare("int") == 0 || v.at(0).name.compare("char") == 0)
         return 6;
 
+    // Input-Output
+    else if(v.at(0).name.compare("print") == 0 || v.at(0).name.compare("read") == 0)
+        return 7;
+
     // Syntax Error
     else
-        return 8;
+        return 9;
 }
 
 string VM::getSegmentPos(Token &t)
@@ -325,6 +320,31 @@ string VM::getSegmentPos(Token &t)
     return s;
 }
 
+void VM::vmCodeToAssembly()
+{
+    ifstream fin;
+    ofstream fout;
+    fin.open(outputTemVM);
+    fout.open(ofname);
+    string is, arm;
+
+    arm = memInit();
+    fout << arm;
+
+    while (getline(fin, is))
+    {
+        arm = getAssemblyCode(is);
+        fout << arm;
+    }
+
+    arm = "end:\n";
+    arm += "\tj end\n";
+    fout << arm;
+
+    fin.close();
+    fout.close();
+}
+
 string VM::memInit()
 {
     string armcode = "";
@@ -357,8 +377,10 @@ string VM::getAssemblyCode(string s)
     // if-goto - 6
     // goto - 7
     // Label - 8
-    // New Line - 9
-    // Syntax Error - 10
+    // print - 9
+    // read - 10
+    // New Line - 11
+    // Syntax Error - 12
 
     int typeOfInstruction = getVMTypeOfInstruction(tokens);
     // cout<<s<<" -> "<<typeOfInstruction<<endl;
@@ -618,13 +640,93 @@ string VM::getAssemblyCode(string s)
     }
     else if(typeOfInstruction == 9)
     {
+        // print
+        
+        // temp
+        if(tokens.at(1).name.compare("temp")==0)
+        {
+            // _ti <==> r(i%26)
+            int regNo = (stoi(tokens.at(2).name))%26;
+
+            // $ri -> MEM[16387]
+            armcode += "\tsw $r" + to_string(regNo) + ",$zero(16387)\n";
+        }
+
+        else
+        {
+            
+            // local
+            if(tokens.at(1).name.compare("local")==0)
+            {
+                // $r28 <- MEM[LCL + i]
+                armcode += "\tlw $r28,$one(0)\n";
+                armcode += "\tlw $r28,$r28(" + tokens.at(2).name + ")\n";
+            }
+
+            // argument
+            else if(tokens.at(1).name.compare("argument")==0)
+            {
+                // $r28 <- MEM[ARG + i]
+                armcode += "\tlw $r28,$one(1)\n";
+                armcode += "\tlw $r28,$r28(" + tokens.at(2).name + ")\n";
+            }
+
+            // r28 -> MEM[16387]
+            armcode += "\tsw $r28,$zero(16387)\n";
+        }
+    }
+    else if(typeOfInstruction == 10)
+    {
+        // read
+        
+        // input_i:
+        string label = "input_" + to_string(inputLabel++);
+        armcode += label + ":\n";
+
+        // $r28 <- MEM[16386]
+        armcode += "\tlw $r28,$zero(16386)\n";
+        armcode += "\tbeq $r28,$zero," + label + "\n";
+
+        // temp
+        if(tokens.at(1).name.compare("temp")==0)
+        {
+            // _ti <==> r(i%26)
+            int regNo = (stoi(tokens.at(2).name))%26;
+
+            // $ri <- MEM[16386]
+            armcode += "\tadd $r" + to_string(regNo) + ",$r28,$zero\n";
+        }
+
+        else
+        {
+            
+            // local
+            if(tokens.at(1).name.compare("local")==0)
+            {
+                // $r27 <- LCL
+                armcode += "\tlw $r27,$one(0)\n";
+            }
+
+            // argument
+            else if(tokens.at(1).name.compare("argument")==0)
+            {
+                // $r27 <- ARG
+                armcode += "\tlw $r27,$one(1)\n";
+            }
+
+            // r28 -> MEM[16387]
+            armcode += "\tsw $r28,$r27(" + tokens.at(2).name + ")\n";
+        }
+    }
+    else if(typeOfInstruction == 11)
+    {
         // New line
         armcode += "\n";
     }
     else
     {
         //Syntax Error
-        cout << "Three Address Code Syntax ERROR : -" << endl;
+        cout << "VM Code Syntax ERROR : -" << endl;
         cout << s << endl;
     }
     return armcode;
@@ -634,7 +736,7 @@ int VM::getVMTypeOfInstruction(vector<Token> &v)
 {
     //New Line
     if(v.empty())
-        return 9;
+        return 11;
 
     else if(v.at(0).name.compare("push")==0)
         return 0;
@@ -657,8 +759,12 @@ int VM::getVMTypeOfInstruction(vector<Token> &v)
         return 7;
     else if(v.at(0).name.compare("label")==0)
         return 8;
-
+    else if(v.at(0).name.compare("print")==0)
+        return 9;
+    else if(v.at(0).name.compare("read")==0)
+        return 10;
+    
     // Syntax Error
     else
-        return 10;
+        return 12;
 }
