@@ -519,6 +519,9 @@ string VM::getAssemblyCode(string s)
         armcode += "\taddi $r27,$r28,-" + to_string(n) + "\n";
         armcode += "\tsw $r27,$one(1)\n";
 
+        // Update SP
+        armcode += "\tsw $r28,$zero(0)\n";
+        
         // LCL = SP // change LCL
         armcode += "\tsw $r28,$one(0)\n";
 

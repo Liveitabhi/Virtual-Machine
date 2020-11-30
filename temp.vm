@@ -1,13 +1,11 @@
 function main 3
-push local 0
-push local 1
-call add 2
+call func 0
 pop temp 1
-push temp 1
-pop local 2
-function add 0
-push argument 0
-push argument 1
+label end
+
+function func 0
+push constant 5
+push constant 2
 add
 pop temp 0
 push temp 0
